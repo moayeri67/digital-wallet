@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap  PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="wallet">
+
+    <typeAlias alias="Wallet" type="com.revolut.entity.Wallet"/>
+
+    <resultMap id="WalletResultMap" class="Wallet">
+        <result property="id" column="walletId"/>
+        <result property="currencyId" column="currencyId"/>
+        <result property="accountNumber" column="accountNumber"/>
+        <result property="balance" column="balance"/>
+    </resultMap>
+
+    <statement id="initialRepository">
+        CREATE TABLE currency (currencyId int(11) NOT NULL, `name` varchar(3) NOT NULL, PRIMARY KEY (currencyId), UNIQUE KEY name_UNIQUE (name));
+        CREATE TABLE user (accountNumber int(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY (accountNumber));
+        CREATE TABLE wallet (walletId int(11) NOT NULL AUTO_INCREMENT, currencyId int(3) NOT NULL , accountNumber int(11) NOT NULL, balance decimal(10,0) NOT NULL, PRIMARY KEY (walletId), FOREIGN KEY (currencyId) REFERENCES currency(currencyId) , FOREIGN KEY (accountNumber) REFERENCES user(accountNumber));
+
+        INSERT INTO currency VALUES (0,'USD'),(1,'EUR'),(2,'GBP');
+        INSERT INTO user VALUES (100),(200);
+        INSERT INTO wallet VALUES (1, 0, 100, 0),(2, 1, 100, 0),(3, 1, 200, 0);
+    </statement>
+
+    <select id="getWalletsByUserIdAndCurrency" parameterClass="Wallet" resultMap="WalletResultMap">
+        SELECT * FROM wallet WHERE accountNumber =#accountNumber# and currencyId=#currencyId#
+    </select>
+
+    <select id="getWalletsByUserId" parameterClass="java.lang.Integer" resultMap="WalletResultMap">
+        SELECT * FROM wallet WHERE accountNumber =#accountNumber#
+    </select>
+
+    <update id="updateWallet" parameterClass="Wallet">
+        UPDATE wallet
+          SET
+              currencyId=#currencyId#,
+              accountNumber=#accountNumber#,
+              balance=#balance#
+          WHERE walletId=#id#
+    </update>
+</sqlMap>
